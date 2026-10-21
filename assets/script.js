@@ -11,9 +11,26 @@ if(!reduceMotion){
 }else{document.querySelectorAll('.reveal').forEach(el=>el.classList.add('visible'))}
 let scheduled=false;function onScroll(){if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{const doc=document.documentElement;const max=doc.scrollHeight-innerHeight;document.querySelector('.progress').style.width=(max>0?scrollY/max*100:0)+'%';if(!reduceMotion){const about=document.querySelector('.about-visual');const r=about.getBoundingClientRect();if(r.top<innerHeight&&r.bottom>0){const p=(innerHeight-r.top)/(innerHeight+r.height)-.5;about.style.setProperty('--scroll-offset',(p*38).toFixed(1)+'px')}}scheduled=false})}addEventListener('scroll',onScroll,{passive:true});onScroll();
 
-// A quiet, opt-in breathing interaction (four seconds in, four out).
-const breathButton=document.querySelector('.breath-button');const breathStatus=document.querySelector('.breath-status');let breathTimer=null;let breathStart=0;
-breathButton.addEventListener('click',()=>{const active=breathButton.getAttribute('aria-pressed')==='true';breathButton.setAttribute('aria-pressed',String(!active));clearInterval(breathTimer);if(active){breathStatus.textContent='Tap to begin';breathButton.querySelector('.breath-core').textContent='Start';return;}breathStart=Date.now();breathButton.querySelector('.breath-core').textContent='Pause';const tick=()=>{const phase=Math.floor((Date.now()-breathStart)/4000)%2;breathStatus.textContent=phase===0?'Breathe in':'Breathe out'};tick();breathTimer=setInterval(tick,250)});
+// Opt-in guided breathing: four seconds expanding, four seconds contracting.
+const breathButton=document.querySelector('.breath-button');
+const breathStatus=document.querySelector('.breath-status');
+const breathCore=breathButton.querySelector('.breath-core');
+let breathTimer=null,breathStart=0;
+function updateBreath(){
+ const phase=Math.floor((performance.now()-breathStart)/4000)%2;
+ const inhaling=phase===0;
+ breathStatus.textContent=inhaling?'Inhale · expand':'Exhale · contract';
+ breathCore.textContent=inhaling?'Inhale':'Exhale';
+}
+breathButton.addEventListener('click',()=>{
+ const active=breathButton.getAttribute('aria-pressed')==='true';
+ clearInterval(breathTimer);
+ breathButton.setAttribute('aria-pressed',String(!active));
+ if(active){breathStatus.textContent='Tap to begin';breathCore.textContent='Start';breathButton.setAttribute('aria-label','Start breathing animation');return;}
+ breathStart=performance.now();
+ breathButton.setAttribute('aria-label','Pause breathing animation');
+ updateBreath();breathTimer=setInterval(updateBreath,100);
+});
 // Scroll-responsive instrumentation: a subtle nod to F1 telemetry.
 let lastScroll=scrollY,lastStamp=performance.now(),displaySpeed=0;const speedNode=document.getElementById('velocity');const bars=[...document.querySelectorAll('.velocity-bars i')];
 addEventListener('scroll',()=>{const now=performance.now();const elapsed=Math.max(16,now-lastStamp);const speed=Math.min(99,Math.round(Math.abs(scrollY-lastScroll)/elapsed*32));displaySpeed=speed;speedNode.textContent=String(speed).padStart(2,'0');bars.forEach((bar,i)=>bar.style.opacity=speed>(i*12)?'1':'.25');lastScroll=scrollY;lastStamp=now;},{passive:true});
