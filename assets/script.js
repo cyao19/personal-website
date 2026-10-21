@@ -61,15 +61,15 @@ breathButton?.addEventListener('click',()=>{
   goose.className = 'site-goose';
   goose.setAttribute('aria-label', 'Make the goose run away');
   goose.title = 'Tap the goose';
-  goose.innerHTML = `<svg viewBox="0 0 160 150" aria-hidden="true" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  goose.innerHTML = `<svg viewBox="0 0 150 125" aria-hidden="true" fill="none" stroke-linecap="round" stroke-linejoin="round">
     <g class="goose-bob">
-      <g class="goose-leg goose-leg-back"><path d="M69 112 L68 128 L55 133 L76 133" /></g>
-      <g class="goose-leg goose-leg-front"><path d="M95 111 L97 128 L86 133 L108 133" /></g>
-      <path class="goose-tail" d="M30 91 Q17 86 16 75 Q29 81 40 80" />
-      <path class="goose-body-shape" d="M27 92 C29 75 44 66 66 66 C82 66 95 74 105 67 C113 61 112 43 111 25 C110 12 115 6 122 6 C132 6 135 13 133 23 C131 39 130 57 132 78 C134 101 117 116 92 118 C66 121 43 115 33 104 Q27 99 27 92 Z" />
-      <path class="goose-wing" d="M44 87 C59 94 80 96 95 88 C85 104 63 108 47 99" />
-      <path class="goose-bill" d="M133 21 L149 26 L133 30 Z" />
-      <circle cx="126" cy="18" r="2" fill="#2e2a28" stroke="none" />
+      <g class="goose-leg goose-leg-back"><path d="M66 95 L64 108 L57 114 L72 114"/></g>
+      <g class="goose-leg goose-leg-front"><path d="M87 95 L90 108 L83 114 L99 114"/></g>
+      <path class="goose-tail" d="M33 78 Q24 78 20 71 Q30 73 39 69"/>
+      <path class="goose-body-shape" d="M29 79 Q29 62 45 56 Q59 50 76 57 Q86 60 94 55 Q100 49 103 33 L108 17 Q110 8 119 8 Q128 8 130 17 Q131 22 128 28 Q121 38 120 54 Q119 73 112 84 Q102 100 77 101 Q52 102 38 92 Q29 86 29 79 Z"/>
+      <path class="goose-wing" d="M43 76 Q54 84 68 82 Q61 89 51 87"/>
+      <path class="goose-bill" d="M130 18 L143 22 L130 25 Z"/>
+      <circle cx="123" cy="17" r="1.8" fill="#302e2a" stroke="none"/>
     </g>
   </svg>`;
   document.body.appendChild(goose);
@@ -97,10 +97,12 @@ breathButton?.addEventListener('click',()=>{
     walkAnimation.onfinish = hide;
   }
 
-  goose.addEventListener('click', () => {
+  function runAway(event) {
     if (running || !walkAnimation) return;
+    if (event.type === 'pointerdown' && event.button !== 0) return;
+    // A moving button may never receive click on mobile; pointerdown fires at first contact.
+    if (event.type === 'pointerdown') event.preventDefault();
     running = true;
-    // Capture the current position before canceling the walk. No second tap needed.
     const currentX = goose.getBoundingClientRect().left;
     walkAnimation.onfinish = null;
     walkAnimation.cancel();
@@ -110,10 +112,12 @@ breathButton?.addEventListener('click',()=>{
     runAnimation = goose.animate(
       [{transform:`translate3d(${currentX}px,0,0)`},
        {transform:`translate3d(${window.innerWidth + 160}px,0,0)`}],
-      {duration:750, easing:'cubic-bezier(.35,0,.85,.5)', fill:'forwards'}
+      {duration:700, easing:'cubic-bezier(.35,0,.85,.5)', fill:'forwards'}
     );
     runAnimation.onfinish = hide;
-  });
+  }
+  goose.addEventListener('pointerdown', runAway);
+  goose.addEventListener('click', runAway); // keyboard and non-pointer fallback
 
   if (!reduceMotion) {
     visitTimeout = setTimeout(visit, 3500);

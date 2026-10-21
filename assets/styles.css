@@ -52,7 +52,7 @@
 
 
 /* Plump hand-drawn goose with independent alternating feet. */
-.site-goose{position:fixed;bottom:8px;left:0;z-index:22;width:116px;height:116px;padding:0;border:0;background:transparent;cursor:pointer;opacity:0;pointer-events:none;touch-action:manipulation;transform:translate3d(-160px,0,0)}
+.site-goose{position:fixed;bottom:8px;left:0;z-index:22;width:116px;height:100px;padding:0;border:0;background:transparent;cursor:pointer;opacity:0;pointer-events:none;touch-action:manipulation;transform:translate3d(-160px,0,0)}
 .site-goose.is-visible{opacity:1;pointer-events:auto}
 .site-goose.is-running{pointer-events:none}
 .site-goose svg{width:100%;height:100%;display:block;overflow:visible}
@@ -67,7 +67,13 @@
 .site-goose:focus-visible{outline:2px solid #7779b6;outline-offset:3px;border-radius:12px}
 @keyframes goose-step{from{transform:rotate(-22deg)}to{transform:rotate(22deg)}}
 @keyframes goose-bob{from{transform:translateY(0)}to{transform:translateY(-2px)}}
-@media(max-width:600px){.site-goose{bottom:4px;width:96px;height:96px}}
+@media(max-width:600px){.site-goose{bottom:4px;width:96px;height:83px}}
 @media(prefers-reduced-motion:reduce){.site-goose,.site-goose.is-visible{opacity:0;pointer-events:none}.site-goose .goose-leg,.site-goose .goose-bob{animation:none}}
 
 .site-goose .goose-tail{fill:#fffefa;stroke:#39352f;stroke-width:2.4}
+
+/* Reference-inspired slender-neck goose, tiny bill and little outlined wing. */
+.site-goose .goose-body-shape{fill:#fffefa;stroke:#38332e;stroke-width:2.15}
+.site-goose .goose-wing{fill:none;stroke:#38332e;stroke-width:1.8}
+.site-goose .goose-tail{fill:#fffefa;stroke:#38332e;stroke-width:2}
+.site-goose .goose-leg{stroke:#cc873d;stroke-width:3}
