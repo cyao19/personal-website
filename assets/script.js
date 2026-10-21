@@ -31,6 +31,3 @@ breathButton.addEventListener('click',()=>{
  breathButton.setAttribute('aria-label','Pause breathing animation');
  updateBreath();breathTimer=setInterval(updateBreath,100);
 });
-// Scroll-responsive instrumentation: a subtle nod to F1 telemetry.
-let lastScroll=scrollY,lastStamp=performance.now(),displaySpeed=0;const speedNode=document.getElementById('velocity');const bars=[...document.querySelectorAll('.velocity-bars i')];
-addEventListener('scroll',()=>{const now=performance.now();const elapsed=Math.max(16,now-lastStamp);const speed=Math.min(99,Math.round(Math.abs(scrollY-lastScroll)/elapsed*32));displaySpeed=speed;speedNode.textContent=String(speed).padStart(2,'0');bars.forEach((bar,i)=>bar.style.opacity=speed>(i*12)?'1':'.25');lastScroll=scrollY;lastStamp=now;},{passive:true});

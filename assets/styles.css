@@ -24,3 +24,11 @@
 
 /* Keep the native green emoji appearance rather than recoloring the text glyph. */
 .ticker-star{font-family: "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;color:initial!important;font-variant-emoji:emoji}
+
+/* CLEANUP: three static repeats, no rotating symbols or floating decorations. */
+.motion-ticker{height:auto;min-height:56px;justify-content:center;padding:12px 22px;background:#eeeaf3;}
+.motion-ticker .ticker-track{display:flex;justify-content:center;align-items:center;gap:clamp(20px,3vw,50px);white-space:normal;min-width:0;flex-wrap:wrap;animation:none!important;transform:none!important;line-height:1.8;}
+.motion-ticker .ticker-repeat{display:inline-flex;align-items:center;gap:9px;white-space:nowrap;font-size:clamp(9px,.85vw,12px);letter-spacing:.11em;color:#5f6086;}
+.motion-ticker .ticker-star{display:inline;animation:none!important;transform:none!important;padding:0!important;font-size:15px;line-height:1;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;}
+.hero-edge,.art-index,.motion-readout,.flow-field{display:none!important;}
+@media(max-width:740px){.motion-ticker .ticker-track{gap:8px 20px}.motion-ticker .ticker-repeat{font-size:9px}}
