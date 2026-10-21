@@ -22,11 +22,5 @@
 /* Signature motif: rhythm, precision, play */
 .ticker-track{animation-duration:40s}.ticker-track .ticker-star{display:inline-block;padding:0 24px;color:#7474bb;font-size:16px;animation:asterisk-spin 10s linear infinite;vertical-align:-1px}.hero-edge{letter-spacing:.18em;color:#8580b6}.art-index{letter-spacing:.16em}.brand-dot{display:inline-block;transition:transform .6s ease}.brand:hover .brand-dot{transform:rotate(180deg)}@keyframes asterisk-spin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.ticker-track .ticker-star{animation:none}}
 
-/* Breathing guide: visibly grows on inhale and shrinks on exhale. */
-.breath-button{isolation:isolate}.breath-button::before{content:"";position:absolute;inset:13px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#dcd9ff,#a5a5e5 78%);opacity:.22;transform:scale(.7)}
-.breath-button[aria-pressed="true"]::before{animation:breath-fill 8s ease-in-out infinite}
-.breath-button[aria-pressed="true"] .breath-ring{animation:breath-outline 8s ease-in-out infinite}
-.breath-button[aria-pressed="true"] .breath-core{font-size:11px;font-weight:500}
-@keyframes breath-fill{0%,100%{transform:scale(.65);opacity:.2}50%{transform:scale(1.25);opacity:.65}}
-@keyframes breath-outline{0%,100%{transform:scale(.76)}50%{transform:scale(1.27)}}
-@media(prefers-reduced-motion:reduce){.breath-button::before,.breath-button[aria-pressed="true"]::before,.breath-button[aria-pressed="true"] .breath-ring{animation:none!important}.breath-button[aria-pressed="true"]::before{opacity:.45;transform:scale(1)}}
+/* Keep the native green emoji appearance rather than recoloring the text glyph. */
+.ticker-star{font-family: "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;color:initial!important;font-variant-emoji:emoji}
