@@ -32,3 +32,10 @@
 .motion-ticker .ticker-star{display:inline;animation:none!important;transform:none!important;padding:0!important;font-size:15px;line-height:1;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;}
 .hero-edge,.art-index,.motion-readout,.flow-field{display:none!important;}
 @media(max-width:740px){.motion-ticker .ticker-track{gap:8px 20px}.motion-ticker .ticker-repeat{font-size:9px}}
+
+/* Full-width, evenly spaced static three-phrase strip. */
+.motion-ticker{width:100%;padding:12px clamp(12px,2.4vw,40px);}
+.motion-ticker .ticker-track{width:100%;min-width:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;align-items:center;justify-items:center;flex-wrap:nowrap;}
+.motion-ticker .ticker-repeat{justify-content:center;gap:clamp(3px,.55vw,10px);font-size:clamp(8px,.85vw,12px);letter-spacing:clamp(0px,.07vw,1.2px);}
+.motion-ticker .ticker-star{font-size:clamp(11px,1.1vw,16px);}
+@media(max-width:740px){.motion-ticker{padding:10px 12px}.motion-ticker .ticker-track{grid-template-columns:1fr;gap:7px}.motion-ticker .ticker-repeat{font-size:10px;letter-spacing:.07em}}
