@@ -103,3 +103,23 @@
 .journal-end-link{display:inline-block;font:11px 'DM Mono',monospace;border-bottom:1px solid var(--line);padding-bottom:9px;margin-top:55px}
 @media(max-width:760px){.journal-desktop-break{display:none}.journal-header{padding:145px 30px 60px}.journal-header h1{font-size:clamp(43px,8.2vw,66px);line-height:1.15;letter-spacing:-.045em}.journal-back{margin-bottom:65px}.journal-content{padding:65px 30px 100px}}
 @media(max-width:560px){.journal-header{padding:125px 24px 50px}.journal-header h1{font-size:clamp(40px,10.4vw,56px);line-height:1.16}.journal-back{margin-bottom:55px}.journal-byline{margin-top:42px}.journal-content{padding:60px 24px 100px;font-size:18px}}
+
+/* Gallery: a quiet home for the existing goose. */
+.gallery{min-height:700px;display:grid;grid-template-columns:44% 1fr;gap:10%;align-items:center}
+.goose-yard{position:relative;height:400px;isolation:isolate;min-width:0}
+.goose-house{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);width:min(80%,330px);padding:0;border:0;background:transparent;cursor:pointer;color:var(--muted);touch-action:manipulation}
+.goose-house svg{display:block;width:100%;height:auto}
+.goose-ground{position:absolute;left:0;right:0;bottom:44px;border-top:1px solid #a7a6cd;z-index:-1}
+.goose-status{font:11px/1.8 'DM Mono',monospace;color:var(--muted);margin-top:32px;min-height:40px;max-width:310px}
+.goose-snores{position:absolute;top:42%;left:58%;font:18px Georgia,serif;color:#7779aa;opacity:0;pointer-events:none}
+.goose-snores span{display:inline-block;transform:translateY(-12px);font-size:15px;margin-left:7px}.goose-snores span+span{transform:translateY(-25px);font-size:12px}
+.is-sleeping .goose-snores{opacity:1;animation:house-snooze 3s ease-in-out infinite}
+@keyframes house-snooze{0%,100%{transform:translateY(3px);opacity:.4}50%{transform:translateY(-5px);opacity:1}}
+.site-goose.resident-goose{position:absolute;bottom:35px;width:100px;height:84px;transform:none;z-index:2;opacity:1;pointer-events:auto;transition:opacity .3s;}
+.resident-goose svg{transition:transform .2s}.resident-goose.faces-left svg{transform:scaleX(-1)}
+.site-goose.resident-goose.is-inside{opacity:0;pointer-events:none}
+.resident-goose:not(.is-walking) .goose-leg,.resident-goose:not(.is-walking) .goose-bob{animation-play-state:paused}
+.goose-house:focus-visible{outline-offset:5px;border-radius:8px}
+@media(max-width:850px){.gallery{grid-template-columns:1fr;gap:25px}.gallery-copy{grid-row:1}.goose-yard{width:100%;max-width:500px;justify-self:center;height:350px}.gallery h2{margin-bottom:20px}.goose-status{margin-top:18px}}
+@media(max-width:560px){.goose-yard{height:320px}.site-goose.resident-goose{width:86px;height:73px}.goose-house{width:min(85%,285px)}}
+@media(prefers-reduced-motion:reduce){.site-goose.resident-goose{opacity:1;pointer-events:auto}.site-goose.resident-goose.is-inside{opacity:0;pointer-events:none}.is-sleeping .goose-snores{animation:none;opacity:1}}

@@ -74,6 +74,71 @@ breathButton?.addEventListener('click',()=>{
   </svg>`;
   document.body.appendChild(goose);
 
+  // Home-page resident uses the original goose artwork, with one cancellable state machine.
+  const yard = document.querySelector('.goose-yard');
+  if (yard) {
+    yard.appendChild(goose);
+    goose.classList.add('resident-goose', 'is-visible');
+    const house = yard.querySelector('.goose-house');
+    const status = document.getElementById('goose-status');
+    let timer, movement, state = 'outside', visible = false, current = .76;
+    function stop() { clearTimeout(timer); if (movement) { const left = goose.getBoundingClientRect().left - yard.getBoundingClientRect().left; movement.cancel(); movement = null; goose.style.left = left + "px"; } }
+    function place(fraction) { current = fraction; goose.style.left = (fraction * yard.clientWidth - goose.offsetWidth / 2) + 'px'; }
+    function label(text) { status.textContent = text; }
+    function nap() {
+      stop(); state = 'sleeping'; place(.5);
+      goose.classList.add('is-inside'); goose.classList.remove('is-walking', 'is-running');
+      goose.inert = true; house.classList.add('is-sleeping');
+      house.setAttribute('aria-label', 'Wake the goose'); label('A little nap. Tap the house to wake me.');
+      if (visible && !reduceMotion) timer = setTimeout(hello, 14000);
+    }
+    function move(to, duration, done) {
+      stop(); goose.classList.add('is-walking');
+      goose.classList.toggle('faces-left', to < current);
+      const from = goose.offsetLeft, target = to * yard.clientWidth - goose.offsetWidth / 2;
+      place(to);
+      if (reduceMotion) { goose.classList.remove('is-walking'); done(); return; }
+      movement = goose.animate([{left: from + 'px'}, {left: target + 'px'}], {duration, easing: 'ease-in-out'});
+      movement.onfinish = () => { movement = null; goose.classList.remove('is-walking'); done(); };
+    }
+    function home() {
+      state = 'returning'; label('Heading home…');
+      move(.5, 1800, nap);
+    }
+    function hello() {
+      stop(); state = 'outside'; goose.inert = false;
+      goose.classList.remove('is-inside', 'is-running'); house.classList.remove('is-sleeping');
+      house.setAttribute('aria-label', 'Call the goose home'); label('Hello! Tap me and I’ll hurry home.');
+      move(.76, 1600, () => { if (visible && !reduceMotion) timer = setTimeout(home, 7000); });
+    }
+    house.addEventListener('click', () => { if (state === 'sleeping') hello(); else home(); });
+    function flee(event) {
+      if (event.type === 'pointerdown' && event.button !== 0) return;
+      if (state === 'sleeping' || state === 'returning') return;
+      if (event.type === 'pointerdown') event.preventDefault();
+      state = 'returning'; goose.classList.add('is-running'); label('Home, quick!'); move(.5, 550, nap);
+    }
+    goose.addEventListener('pointerdown', flee);
+    goose.addEventListener('click', flee);
+    goose.setAttribute('aria-label', 'Send the goose running home');
+    place(.76);
+    const observer = new IntersectionObserver(entries => {
+      visible = entries[0].isIntersecting && !document.hidden;
+      if (!visible) clearTimeout(timer);
+      else if (!reduceMotion && state === 'outside') timer = setTimeout(home, 6500);
+      else if (!reduceMotion && state === 'sleeping') timer = setTimeout(hello, 10000);
+    }, {threshold: .2}); observer.observe(yard);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) { visible = false; clearTimeout(timer); }
+      else { const r = yard.getBoundingClientRect(); visible = r.bottom > 0 && r.top < innerHeight;
+        if (visible && !reduceMotion) { clearTimeout(timer); timer = setTimeout(state === 'sleeping' ? hello : home, 6500); }
+      }
+    });
+    window.addEventListener('resize', () => { if (state === 'returning') nap(); else { stop(); place(current); } });
+    return;
+  }
+
+
   let walkAnimation = null;
   let runAnimation = null;
   let running = false;
