@@ -48,3 +48,19 @@
 .blog-empty p{font:400 clamp(32px,4vw,48px)/1.2 Georgia,serif;letter-spacing:-.035em;margin:0 0 14px}
 .blog-empty span{font-size:14px;color:var(--muted)}
 @media(max-width:560px){.blog-page-hero{padding-top:150px;padding-bottom:70px}.blog-page-hero h1{font-size:clamp(80px,18vw,110px)}.blog-index{padding-top:55px;padding-bottom:95px}}
+
+
+/* Occasional wandering goose: self-contained, no layout shift. */
+.site-goose{position:fixed;bottom:12px;left:0;z-index:22;width:96px;height:91px;padding:0;border:0;background:none;color:inherit;cursor:pointer;opacity:0;pointer-events:none;transform:translate3d(-125px,0,0);will-change:transform;touch-action:manipulation}
+.site-goose.is-walking{opacity:1;pointer-events:auto;animation:goose-cross 13s linear both}
+.site-goose svg{display:block;width:96px;height:84px;overflow:visible;filter:drop-shadow(0 2px 2px #3c36411c)}
+.site-goose .goose-legs{transform-origin:44px 65px;animation:goose-step .36s ease-in-out infinite alternate}
+.site-goose .goose-wing{transform-origin:50px 47px;transition:transform .18s ease}
+.site-goose.is-honking .goose-wing{transform:rotate(-16deg)}
+.site-goose .goose-honk{position:absolute;left:47px;top:-6px;font:10px 'DM Mono',monospace;letter-spacing:.08em;color:#6d6b9a;background:#f5f0e8f2;border:1px solid #d7d0c9;border-radius:12px;padding:5px 9px;opacity:0;transform:translateY(5px);transition:opacity .16s,transform .16s;pointer-events:none}
+.site-goose.is-honking .goose-honk{opacity:1;transform:translateY(0)}
+.site-goose:focus-visible{outline:2px solid #7779b6;outline-offset:3px;border-radius:12px}
+@keyframes goose-cross{from{transform:translate3d(-125px,0,0)}to{transform:translate3d(calc(100vw + 125px),0,0)}}
+@keyframes goose-step{from{transform:rotate(-8deg)}to{transform:rotate(8deg)}}
+@media(max-width:600px){.site-goose{bottom:6px;scale:.8;transform-origin:bottom left}}
+@media(prefers-reduced-motion:reduce){.site-goose,.site-goose.is-walking{animation:none!important;opacity:0;pointer-events:none}.site-goose .goose-legs{animation:none!important}}
