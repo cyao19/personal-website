@@ -52,42 +52,54 @@ breathButton?.addEventListener('click',()=>{
 });
 
 
-// Small wandering goose. Added on both pages without editing their HTML.
+// A small wandering goose. Tap or press Enter/Space to send it running.
 (() => {
-  if (reduceMotion || document.querySelector('.site-goose')) return;
+  if (document.querySelector('.site-goose')) return;
   const goose = document.createElement('button');
   goose.type = 'button';
   goose.className = 'site-goose';
-  goose.setAttribute('aria-label', 'Honk at the wandering goose');
-  goose.title = 'Say hello to the goose';
-  goose.innerHTML = `<span class="goose-honk" aria-hidden="true">honk!</span>
-    <svg viewBox="0 0 112 94" role="img" aria-label="Little white goose with an orange beak and feet">
-      <g class="goose-legs" fill="none" stroke="#d58c4e" stroke-width="3.5" stroke-linecap="round">
-        <path d="M46 67 L45 82 L35 84 M45 82 L52 85"/><path d="M65 66 L65 81 L56 84 M65 81 L73 84"/>
-      </g>
-      <path d="M19 45 Q11 40 9 32 Q23 39 34 39 C44 34 58 34 68 39 C77 30 72 20 73 12 C74 2 85 1 91 8 C96 14 92 23 89 29 L88 47 C86 64 72 72 51 72 C32 72 20 63 19 45 Z" fill="#fffefa" stroke="#666275" stroke-width="1.6" stroke-linejoin="round"/>
-      <path class="goose-wing" d="M27 46 Q46 40 65 49 Q54 62 34 57" fill="#f1edf3" stroke="#8b8496" stroke-width="1.25"/>
-      <path d="M91 14 L106 18 L92 23 Z" fill="#e8a15d" stroke="#b87845" stroke-width="1.1"/>
-      <circle cx="85" cy="12" r="2.15" fill="#3d3a42"/>
-    </svg>`;
+  goose.setAttribute('aria-label', 'Make the walking goose run away');
+  goose.title = 'Tap the goose';
+  goose.innerHTML = `<svg viewBox="0 0 140 130" aria-hidden="true" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <g class="goose-body">
+      <path class="goose-outline goose-silhouette" d="M36 75 Q26 73 22 63 Q21 59 29 60 Q40 46 60 46 Q73 46 78 35 Q82 26 83 16 Q84 6 93 7 Q103 8 103 17 L103 24 L119 28 L103 32 Q99 44 99 57 Q99 83 79 91 Q52 101 36 75 Z"/>
+      <path class="goose-outline goose-wing" d="M39 66 Q50 76 66 71"/>
+      <circle cx="95" cy="17" r="2" fill="#302e2a"/>
+      <path class="goose-beak" d="M103 24 L119 28 L103 32 Z"/>
+      <g class="goose-leg goose-leg-one"><path class="goose-foot" d="M61 92 L59 108 L49 116 L65 116"/></g>
+      <g class="goose-leg goose-leg-two"><path class="goose-foot" d="M78 92 L81 109 L74 117 L91 117"/></g>
+    </g>
+  </svg>`;
   document.body.appendChild(goose);
-  let honkTimer;
-  goose.addEventListener('click', () => {
-    goose.classList.add('is-honking');
-    clearTimeout(honkTimer);
-    honkTimer = setTimeout(() => goose.classList.remove('is-honking'), 1100);
-  });
-  function wander() {
-    if (document.hidden) return;
-    goose.classList.remove('is-walking', 'is-honking');
-    // Restart the walk from the left on each visit.
-    void goose.offsetWidth;
+
+  let running = false;
+  let resetTimer;
+  const reset = () => {
+    goose.classList.remove('is-walking', 'is-running');
+    goose.style.left = '';
+    goose.style.transform = '';
+    running = false;
+  };
+  const visit = () => {
+    if (document.hidden || running || goose.classList.contains('is-walking')) return;
     goose.classList.add('is-walking');
-  }
-  goose.addEventListener('animationend', (e) => {
-    if (e.animationName === 'goose-cross') goose.classList.remove('is-walking');
+  };
+  goose.addEventListener('click', () => {
+    if (running || !goose.classList.contains('is-walking')) return;
+    running = true;
+    const x = goose.getBoundingClientRect().left;
+    goose.classList.remove('is-walking');
+    goose.style.left = `${x}px`;
+    goose.style.transform = 'translate3d(0,0,0)';
+    goose.classList.add('is-running');
+    clearTimeout(resetTimer);
+    resetTimer = setTimeout(reset, 950);
   });
-  // A quiet surprise, not a constant animation.
-  setTimeout(wander, 3500);
-  setInterval(wander, 36000);
+  goose.addEventListener('animationend', event => {
+    if (event.animationName === 'goose-cross') reset();
+  });
+  if (!reduceMotion) {
+    setTimeout(visit, 3500);
+    setInterval(visit, 36000);
+  }
 })();

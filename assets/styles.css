@@ -50,17 +50,24 @@
 @media(max-width:560px){.blog-page-hero{padding-top:150px;padding-bottom:70px}.blog-page-hero h1{font-size:clamp(80px,18vw,110px)}.blog-index{padding-top:55px;padding-bottom:95px}}
 
 
-/* Occasional wandering goose: self-contained, no layout shift. */
-.site-goose{position:fixed;bottom:12px;left:0;z-index:22;width:96px;height:91px;padding:0;border:0;background:none;color:inherit;cursor:pointer;opacity:0;pointer-events:none;transform:translate3d(-125px,0,0);will-change:transform;touch-action:manipulation}
+/* Quiet outline goose: alternating feet and a quick exit on tap. */
+.site-goose{position:fixed;bottom:8px;left:0;z-index:22;width:116px;height:110px;padding:0;border:0;background:transparent;cursor:pointer;opacity:0;pointer-events:none;transform:translate3d(-140px,0,0);touch-action:manipulation}
+.site-goose svg{display:block;width:100%;height:100%;overflow:visible}
+.site-goose .goose-outline{stroke:#302e2a;stroke-width:2.5}
+.site-goose .goose-silhouette{fill:#fffefa}
+.site-goose .goose-wing{stroke-width:2}
+.site-goose .goose-beak{fill:#e9a35c;stroke:#c17c38;stroke-width:1.8}
+.site-goose .goose-foot{stroke:#cc883f;stroke-width:3.5}
+.site-goose .goose-body{animation:goose-bob .42s ease-in-out infinite alternate}
+.site-goose .goose-leg{transform-box:fill-box;transform-origin:top center;animation:goose-step .42s ease-in-out infinite alternate}
+.site-goose .goose-leg-two{animation-direction:alternate-reverse}
 .site-goose.is-walking{opacity:1;pointer-events:auto;animation:goose-cross 13s linear both}
-.site-goose svg{display:block;width:96px;height:84px;overflow:visible;filter:drop-shadow(0 2px 2px #3c36411c)}
-.site-goose .goose-legs{transform-origin:44px 65px;animation:goose-step .36s ease-in-out infinite alternate}
-.site-goose .goose-wing{transform-origin:50px 47px;transition:transform .18s ease}
-.site-goose.is-honking .goose-wing{transform:rotate(-16deg)}
-.site-goose .goose-honk{position:absolute;left:47px;top:-6px;font:10px 'DM Mono',monospace;letter-spacing:.08em;color:#6d6b9a;background:#f5f0e8f2;border:1px solid #d7d0c9;border-radius:12px;padding:5px 9px;opacity:0;transform:translateY(5px);transition:opacity .16s,transform .16s;pointer-events:none}
-.site-goose.is-honking .goose-honk{opacity:1;transform:translateY(0)}
+.site-goose.is-running{opacity:1;pointer-events:none;animation:goose-flee .9s ease-in forwards}
+.site-goose.is-running .goose-body,.site-goose.is-running .goose-leg{animation-duration:.14s}
 .site-goose:focus-visible{outline:2px solid #7779b6;outline-offset:3px;border-radius:12px}
-@keyframes goose-cross{from{transform:translate3d(-125px,0,0)}to{transform:translate3d(calc(100vw + 125px),0,0)}}
-@keyframes goose-step{from{transform:rotate(-8deg)}to{transform:rotate(8deg)}}
-@media(max-width:600px){.site-goose{bottom:6px;scale:.8;transform-origin:bottom left}}
-@media(prefers-reduced-motion:reduce){.site-goose,.site-goose.is-walking{animation:none!important;opacity:0;pointer-events:none}.site-goose .goose-legs{animation:none!important}}
+@keyframes goose-cross{from{transform:translate3d(-140px,0,0)}to{transform:translate3d(calc(100vw + 140px),0,0)}}
+@keyframes goose-flee{from{transform:translate3d(0,0,0)}to{transform:translate3d(calc(100vw + 140px),0,0)}}
+@keyframes goose-bob{from{transform:translateY(0)}to{transform:translateY(-2px)}}
+@keyframes goose-step{from{transform:rotate(-20deg)}to{transform:rotate(23deg)}}
+@media(max-width:600px){.site-goose{bottom:4px;width:92px;height:88px}}
+@media(prefers-reduced-motion:reduce){.site-goose,.site-goose.is-walking,.site-goose.is-running{animation:none!important;opacity:0;pointer-events:none}.site-goose .goose-body,.site-goose .goose-leg{animation:none!important}}
