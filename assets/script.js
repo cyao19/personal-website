@@ -6,16 +6,16 @@ nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{nav.classLi
 if(!reduceMotion){
  const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target)}}),{threshold:.09});document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
  const art=document.querySelector('.hero-art');let targetX=0,targetY=0,x=0,y=0;
- art.addEventListener('pointermove',e=>{const b=art.getBoundingClientRect();targetX=((e.clientX-b.left)/b.width-.5)*24;targetY=((e.clientY-b.top)/b.height-.5)*20});art.addEventListener('pointerleave',()=>{targetX=0;targetY=0});
- function animate(){x+=(targetX-x)*.065;y+=(targetY-y)*.065;art.style.setProperty('--mx',x.toFixed(2)+'px');art.style.setProperty('--my',y.toFixed(2)+'px');requestAnimationFrame(animate)}animate();
+ if(art){art.addEventListener('pointermove',e=>{const b=art.getBoundingClientRect();targetX=((e.clientX-b.left)/b.width-.5)*24;targetY=((e.clientY-b.top)/b.height-.5)*20});art.addEventListener('pointerleave',()=>{targetX=0;targetY=0});
+ function animate(){x+=(targetX-x)*.065;y+=(targetY-y)*.065;art.style.setProperty('--mx',x.toFixed(2)+'px');art.style.setProperty('--my',y.toFixed(2)+'px');requestAnimationFrame(animate)}animate();}
 }else{document.querySelectorAll('.reveal').forEach(el=>el.classList.add('visible'))}
-let scheduled=false;function onScroll(){if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{const doc=document.documentElement;const max=doc.scrollHeight-innerHeight;document.querySelector('.progress').style.width=(max>0?scrollY/max*100:0)+'%';if(!reduceMotion){const about=document.querySelector('.about-visual');const r=about.getBoundingClientRect();if(r.top<innerHeight&&r.bottom>0){const p=(innerHeight-r.top)/(innerHeight+r.height)-.5;about.style.setProperty('--scroll-offset',(p*38).toFixed(1)+'px')}}scheduled=false})}addEventListener('scroll',onScroll,{passive:true});onScroll();
+let scheduled=false;function onScroll(){if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{const doc=document.documentElement;const max=doc.scrollHeight-innerHeight;document.querySelector('.progress').style.width=(max>0?scrollY/max*100:0)+'%';if(!reduceMotion){const about=document.querySelector('.about-visual');if(about){const r=about.getBoundingClientRect();if(r.top<innerHeight&&r.bottom>0){const p=(innerHeight-r.top)/(innerHeight+r.height)-.5;about.style.setProperty('--scroll-offset',(p*38).toFixed(1)+'px')}}}scheduled=false})}addEventListener('scroll',onScroll,{passive:true});onScroll();
 
 // Single-tap breathing control. The CSS animation and label use one shared state.
 const breathButton=document.querySelector('.breath-button');
 const breathStatus=document.querySelector('.breath-status');
-const breathCore=breathButton.querySelector('.breath-core');
-const breathRing=breathButton.querySelector('.breath-ring');
+const breathCore=breathButton?.querySelector('.breath-core');
+const breathRing=breathButton?.querySelector('.breath-ring');
 let breathing=false;
 let breathFrame=0;
 let breathStart=0;
@@ -31,7 +31,7 @@ function updateBreath(now){
  }
  breathFrame=requestAnimationFrame(updateBreath);
 }
-breathButton.addEventListener('click',()=>{
+breathButton?.addEventListener('click',()=>{
  breathing=!breathing;
  cancelAnimationFrame(breathFrame);
  breathButton.setAttribute('aria-pressed',String(breathing));
