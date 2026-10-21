@@ -111,7 +111,24 @@ breathButton?.addEventListener('click',()=>{
       house.setAttribute('aria-label', 'Call the goose home'); label('Hello! Tap me and I’ll hurry home.');
       move(.76, 1600, () => { if (visible && !reduceMotion) timer = setTimeout(home, 7000); });
     }
-    house.addEventListener('click', () => { if (state === 'sleeping') hello(); else home(); });
+    let lastHousePointer = -Infinity;
+    function toggleHouse() {
+      // A second intentional tap during the return journey calls the goose back out.
+      if (state === 'sleeping' || state === 'returning') hello();
+      else home();
+    }
+    house.addEventListener('pointerdown', event => {
+      if (event.button !== 0 || event.isPrimary === false) return;
+      event.preventDefault();
+      lastHousePointer = performance.now();
+      toggleHouse();
+    });
+    house.addEventListener('click', event => {
+      // Touch browsers may synthesize a click after pointerdown. Do not toggle twice.
+      // Keyboard activation has detail=0 and remains available.
+      if (event.detail !== 0 && performance.now() - lastHousePointer < 1000) return;
+      toggleHouse();
+    });
     function flee(event) {
       if (event.type === 'pointerdown' && event.button !== 0) return;
       if (state === 'sleeping' || state === 'returning') return;
