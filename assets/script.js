@@ -11,23 +11,42 @@ if(!reduceMotion){
 }else{document.querySelectorAll('.reveal').forEach(el=>el.classList.add('visible'))}
 let scheduled=false;function onScroll(){if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{const doc=document.documentElement;const max=doc.scrollHeight-innerHeight;document.querySelector('.progress').style.width=(max>0?scrollY/max*100:0)+'%';if(!reduceMotion){const about=document.querySelector('.about-visual');const r=about.getBoundingClientRect();if(r.top<innerHeight&&r.bottom>0){const p=(innerHeight-r.top)/(innerHeight+r.height)-.5;about.style.setProperty('--scroll-offset',(p*38).toFixed(1)+'px')}}scheduled=false})}addEventListener('scroll',onScroll,{passive:true});onScroll();
 
-// Opt-in guided breathing: four seconds expanding, four seconds contracting.
+// Single-tap breathing control. The CSS animation and label use one shared state.
 const breathButton=document.querySelector('.breath-button');
 const breathStatus=document.querySelector('.breath-status');
 const breathCore=breathButton.querySelector('.breath-core');
-let breathTimer=null,breathStart=0;
-function updateBreath(){
- const phase=Math.floor((performance.now()-breathStart)/4000)%2;
- const inhaling=phase===0;
- breathStatus.textContent=inhaling?'Inhale · expand':'Exhale · contract';
- breathCore.textContent=inhaling?'Inhale':'Exhale';
+const breathRing=breathButton.querySelector('.breath-ring');
+let breathing=false;
+let breathFrame=0;
+let breathStart=0;
+let lastPhase=-1;
+function updateBreath(now){
+ if(!breathing)return;
+ const phase=Math.floor((now-breathStart)/4000)%2;
+ if(phase!==lastPhase){
+  lastPhase=phase;
+  const inhaling=phase===0;
+  breathStatus.textContent=inhaling?'Inhale · expand':'Exhale · contract';
+  breathCore.textContent=inhaling?'Inhale':'Exhale';
+ }
+ breathFrame=requestAnimationFrame(updateBreath);
 }
 breathButton.addEventListener('click',()=>{
- const active=breathButton.getAttribute('aria-pressed')==='true';
- clearInterval(breathTimer);
- breathButton.setAttribute('aria-pressed',String(!active));
- if(active){breathStatus.textContent='Tap to begin';breathCore.textContent='Start';breathButton.setAttribute('aria-label','Start breathing animation');return;}
- breathStart=performance.now();
- breathButton.setAttribute('aria-label','Pause breathing animation');
- updateBreath();breathTimer=setInterval(updateBreath,100);
+ breathing=!breathing;
+ cancelAnimationFrame(breathFrame);
+ breathButton.setAttribute('aria-pressed',String(breathing));
+ breathButton.setAttribute('aria-label',breathing?'Stop breathing animation':'Start breathing animation');
+ if(breathing){
+  // Reset and begin immediately on the FIRST click, including on touch devices.
+  breathRing.classList.remove('breathing');
+  void breathRing.offsetWidth;
+  breathRing.classList.add('breathing');
+  breathStart=performance.now();
+  lastPhase=-1;
+  updateBreath(breathStart);
+ }else{
+  breathRing.classList.remove('breathing');
+  breathStatus.textContent='Tap to begin';
+  breathCore.textContent='Start';
+ }
 });
