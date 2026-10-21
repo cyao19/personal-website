@@ -52,54 +52,71 @@ breathButton?.addEventListener('click',()=>{
 });
 
 
-// A small wandering goose. Tap or press Enter/Space to send it running.
+
+// Little wandering goose. One tap immediately interrupts its walk and sends it running.
 (() => {
   if (document.querySelector('.site-goose')) return;
   const goose = document.createElement('button');
   goose.type = 'button';
   goose.className = 'site-goose';
-  goose.setAttribute('aria-label', 'Make the walking goose run away');
+  goose.setAttribute('aria-label', 'Make the goose run away');
   goose.title = 'Tap the goose';
-  goose.innerHTML = `<svg viewBox="0 0 140 130" aria-hidden="true" fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <g class="goose-body">
-      <path class="goose-outline goose-silhouette" d="M36 75 Q26 73 22 63 Q21 59 29 60 Q40 46 60 46 Q73 46 78 35 Q82 26 83 16 Q84 6 93 7 Q103 8 103 17 L103 24 L119 28 L103 32 Q99 44 99 57 Q99 83 79 91 Q52 101 36 75 Z"/>
-      <path class="goose-outline goose-wing" d="M39 66 Q50 76 66 71"/>
-      <circle cx="95" cy="17" r="2" fill="#302e2a"/>
-      <path class="goose-beak" d="M103 24 L119 28 L103 32 Z"/>
-      <g class="goose-leg goose-leg-one"><path class="goose-foot" d="M61 92 L59 108 L49 116 L65 116"/></g>
-      <g class="goose-leg goose-leg-two"><path class="goose-foot" d="M78 92 L81 109 L74 117 L91 117"/></g>
+  goose.innerHTML = `<svg viewBox="0 0 160 150" aria-hidden="true" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <g class="goose-bob">
+      <g class="goose-leg goose-leg-back"><path d="M69 112 L68 128 L55 133 L76 133" /></g>
+      <g class="goose-leg goose-leg-front"><path d="M95 111 L97 128 L86 133 L108 133" /></g>
+      <path class="goose-tail" d="M30 91 Q17 86 16 75 Q29 81 40 80" />
+      <path class="goose-body-shape" d="M27 92 C29 75 44 66 66 66 C82 66 95 74 105 67 C113 61 112 43 111 25 C110 12 115 6 122 6 C132 6 135 13 133 23 C131 39 130 57 132 78 C134 101 117 116 92 118 C66 121 43 115 33 104 Q27 99 27 92 Z" />
+      <path class="goose-wing" d="M44 87 C59 94 80 96 95 88 C85 104 63 108 47 99" />
+      <path class="goose-bill" d="M133 21 L149 26 L133 30 Z" />
+      <circle cx="126" cy="18" r="2" fill="#2e2a28" stroke="none" />
     </g>
   </svg>`;
   document.body.appendChild(goose);
 
+  let walkAnimation = null;
+  let runAnimation = null;
   let running = false;
-  let resetTimer;
-  const reset = () => {
-    goose.classList.remove('is-walking', 'is-running');
-    goose.style.left = '';
+  let visitTimeout = null;
+
+  function hide() {
+    goose.classList.remove('is-visible', 'is-running');
     goose.style.transform = '';
     running = false;
-  };
-  const visit = () => {
-    if (document.hidden || running || goose.classList.contains('is-walking')) return;
-    goose.classList.add('is-walking');
-  };
+    walkAnimation = null;
+    runAnimation = null;
+  }
+
+  function visit() {
+    if (reduceMotion || document.hidden || running || walkAnimation) return;
+    goose.classList.add('is-visible');
+    walkAnimation = goose.animate(
+      [{transform:'translate3d(-160px,0,0)'}, {transform:`translate3d(${window.innerWidth + 160}px,0,0)`}],
+      {duration:13000, easing:'linear', fill:'forwards'}
+    );
+    walkAnimation.onfinish = hide;
+  }
+
   goose.addEventListener('click', () => {
-    if (running || !goose.classList.contains('is-walking')) return;
+    if (running || !walkAnimation) return;
     running = true;
-    const x = goose.getBoundingClientRect().left;
-    goose.classList.remove('is-walking');
-    goose.style.left = `${x}px`;
-    goose.style.transform = 'translate3d(0,0,0)';
+    // Capture the current position before canceling the walk. No second tap needed.
+    const currentX = goose.getBoundingClientRect().left;
+    walkAnimation.onfinish = null;
+    walkAnimation.cancel();
+    walkAnimation = null;
+    goose.style.transform = `translate3d(${currentX}px,0,0)`;
     goose.classList.add('is-running');
-    clearTimeout(resetTimer);
-    resetTimer = setTimeout(reset, 950);
+    runAnimation = goose.animate(
+      [{transform:`translate3d(${currentX}px,0,0)`},
+       {transform:`translate3d(${window.innerWidth + 160}px,0,0)`}],
+      {duration:750, easing:'cubic-bezier(.35,0,.85,.5)', fill:'forwards'}
+    );
+    runAnimation.onfinish = hide;
   });
-  goose.addEventListener('animationend', event => {
-    if (event.animationName === 'goose-cross') reset();
-  });
+
   if (!reduceMotion) {
-    setTimeout(visit, 3500);
+    visitTimeout = setTimeout(visit, 3500);
     setInterval(visit, 36000);
   }
 })();
