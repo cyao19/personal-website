@@ -1,7 +1,44 @@
+// One activation per gesture. Stationary controls activate on release so scrolling
+// over a button is not mistaken for a tap; moving geese react at first contact.
+function bindTap(element, activate, {moving = false} = {}) {
+ if (!element) return;
+ let gesture = null, lastPointer = -Infinity;
+ const reset = () => { gesture = null; };
+ element.addEventListener('keydown', event => {
+  // Native button activation still handles Enter / Space, including rapid keyboard use.
+  if (event.key === 'Enter' || event.key === ' ') lastPointer = -Infinity;
+ });
+ element.addEventListener('pointerdown', event => {
+  if (event.button !== 0 || event.isPrimary === false) return;
+  if (moving) {
+   event.preventDefault(); lastPointer = performance.now(); activate(); return;
+  }
+  gesture = {id:event.pointerId, x:event.clientX, y:event.clientY};
+ });
+ element.addEventListener('pointermove', event => {
+  if (gesture && event.pointerId === gesture.id &&
+      Math.hypot(event.clientX - gesture.x, event.clientY - gesture.y) > 10) {
+   reset(); lastPointer = performance.now();
+  }
+ });
+ element.addEventListener('pointercancel', () => { reset(); lastPointer = performance.now(); });
+ element.addEventListener('pointerleave', reset);
+ element.addEventListener('pointerup', event => {
+  if (!gesture || event.pointerId !== gesture.id) return;
+  const tap = Math.hypot(event.clientX - gesture.x, event.clientY - gesture.y) <= 10;
+  reset(); lastPointer = performance.now();
+  if (tap) { event.preventDefault(); activate(); }
+ });
+ element.addEventListener('click', event => {
+  // Suppress compatibility clicks, including detail=0 clicks from touch browsers.
+  if (performance.now() - lastPointer < 750) { event.preventDefault(); return; }
+  activate(); // keyboard, assistive technology, and browsers without Pointer Events
+ });
+}
 const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const year=document.getElementById('year');year.textContent=new Date().getFullYear();
 const menu=document.querySelector('.menu-toggle'),nav=document.querySelector('.nav');
-menu.addEventListener('click',()=>{const open=nav.classList.toggle('open');menu.setAttribute('aria-expanded',String(open))});
+bindTap(menu,()=>{const open=nav.classList.toggle('open');menu.setAttribute('aria-expanded',String(open))});
 nav.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{nav.classList.remove('open');menu.setAttribute('aria-expanded','false')}));
 if(!reduceMotion){
  const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target)}}),{threshold:.09});document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));
@@ -31,7 +68,7 @@ function updateBreath(now){
  }
  breathFrame=requestAnimationFrame(updateBreath);
 }
-breathButton?.addEventListener('click',()=>{
+bindTap(breathButton,()=>{
  breathing=!breathing;
  cancelAnimationFrame(breathFrame);
  breathButton.setAttribute('aria-pressed',String(breathing));
@@ -111,35 +148,19 @@ breathButton?.addEventListener('click',()=>{
       house.setAttribute('aria-label', 'Call the goose home'); label('Hello! Tap me and I’ll hurry home.');
       move(.76, 1600, () => { if (visible && !reduceMotion) timer = setTimeout(home, 7000); });
     }
-    let lastHousePointer = -Infinity;
-    function toggleHouse() {
-      // A second intentional tap during the return journey calls the goose back out.
+    bindTap(house, () => {
       if (state === 'sleeping' || state === 'returning') hello();
       else home();
-    }
-    house.addEventListener('pointerdown', event => {
-      if (event.button !== 0 || event.isPrimary === false) return;
-      event.preventDefault();
-      lastHousePointer = performance.now();
-      toggleHouse();
     });
-    house.addEventListener('click', event => {
-      // Touch browsers may synthesize a click after pointerdown. Do not toggle twice.
-      // Keyboard activation has detail=0 and remains available.
-      if (event.detail !== 0 && performance.now() - lastHousePointer < 1000) return;
-      toggleHouse();
-    });
-    function flee(event) {
-      if (event.type === 'pointerdown' && event.button !== 0) return;
-      if (state === 'sleeping' || state === 'returning') return;
-      if (event.type === 'pointerdown') event.preventDefault();
-      state = 'returning'; goose.classList.add('is-running'); label('Home, quick!'); move(.5, 550, nap);
-    }
-    goose.addEventListener('pointerdown', flee);
-    goose.addEventListener('click', flee);
+    bindTap(goose, () => {
+      if (state === 'sleeping' || goose.classList.contains('is-running')) return;
+      state = 'returning'; goose.classList.add('is-running');
+      label('Home, quick!'); move(.5, 550, nap);
+    }, {moving:true});
     goose.setAttribute('aria-label', 'Send the goose running home');
     place(.76);
     const observer = new IntersectionObserver(entries => {
+      clearTimeout(timer);
       visible = entries[0].isIntersecting && !document.hidden;
       if (!visible) clearTimeout(timer);
       else if (!reduceMotion && state === 'outside') timer = setTimeout(home, 6500);
@@ -151,7 +172,18 @@ breathButton?.addEventListener('click',()=>{
         if (visible && !reduceMotion) { clearTimeout(timer); timer = setTimeout(state === 'sleeping' ? hello : home, 6500); }
       }
     });
-    window.addEventListener('resize', () => { if (state === 'returning') nap(); else { stop(); place(current); } });
+    // Mobile browser bars resize the viewport height while scrolling. Only a real
+    // yard-width change should reposition the goose or finish its journey.
+    let yardWidth = yard.clientWidth;
+    window.addEventListener('resize', () => {
+      if (yard.clientWidth === yardWidth) return;
+      yardWidth = yard.clientWidth;
+      if (state === 'returning') nap();
+      else {
+        stop(); place(current); goose.classList.remove('is-walking');
+        if (visible && !reduceMotion) timer = setTimeout(state === 'sleeping' ? hello : home, 7000);
+      }
+    });
     return;
   }
 
@@ -165,6 +197,8 @@ breathButton?.addEventListener('click',()=>{
     goose.classList.remove('is-visible', 'is-running');
     goose.style.transform = '';
     running = false;
+    if (walkAnimation) { walkAnimation.onfinish = null; walkAnimation.cancel(); }
+    if (runAnimation) { runAnimation.onfinish = null; runAnimation.cancel(); }
     walkAnimation = null;
     runAnimation = null;
   }
@@ -179,11 +213,8 @@ breathButton?.addEventListener('click',()=>{
     walkAnimation.onfinish = hide;
   }
 
-  function runAway(event) {
+  function runAway() {
     if (running || !walkAnimation) return;
-    if (event.type === 'pointerdown' && event.button !== 0) return;
-    // A moving button may never receive click on mobile; pointerdown fires at first contact.
-    if (event.type === 'pointerdown') event.preventDefault();
     running = true;
     const currentX = goose.getBoundingClientRect().left;
     walkAnimation.onfinish = null;
@@ -198,8 +229,7 @@ breathButton?.addEventListener('click',()=>{
     );
     runAnimation.onfinish = hide;
   }
-  goose.addEventListener('pointerdown', runAway);
-  goose.addEventListener('click', runAway); // keyboard and non-pointer fallback
+  bindTap(goose, runAway, {moving:true});
 
   if (!reduceMotion) {
     visitTimeout = setTimeout(visit, 3500);
