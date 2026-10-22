@@ -1,8 +1,11 @@
 // One activation per gesture. Stationary controls activate on release so scrolling
 // over a button is not mistaken for a tap; moving geese react at first contact.
+// Shared across controls: a house tap can reveal the goose under the pointer.
+// The compatibility click must not become a second activation on that new target.
+let lastPointer = -Infinity;
 function bindTap(element, activate, {moving = false} = {}) {
  if (!element) return;
- let gesture = null, lastPointer = -Infinity;
+ let gesture = null;
  const reset = () => { gesture = null; };
  element.addEventListener('keydown', event => {
   // Native button activation still handles Enter / Space, including rapid keyboard use.
@@ -143,17 +146,22 @@ bindTap(breathButton,()=>{
       move(.5, 1800, nap);
     }
     function hello() {
-      stop(); state = 'outside'; goose.inert = false;
+      stop(); state = 'emerging'; goose.inert = false;
       goose.classList.remove('is-inside', 'is-running'); house.classList.remove('is-sleeping');
       house.setAttribute('aria-label', 'Call the goose home'); label('Hello! Tap me and I’ll hurry home.');
-      move(.76, 1600, () => { if (visible && !reduceMotion) timer = setTimeout(home, 7000); });
+      move(.76, 1600, () => {
+        state = 'outside';
+        if (visible && !reduceMotion) timer = setTimeout(home, 7000);
+      });
     }
     bindTap(house, () => {
+      if (state === 'emerging') return;
       if (state === 'sleeping' || state === 'returning') hello();
       else home();
     });
     bindTap(goose, () => {
-      if (state === 'sleeping' || goose.classList.contains('is-running')) return;
+      if (state === 'sleeping') { hello(); return; }
+      if (state === 'emerging' || goose.classList.contains('is-running')) return;
       state = 'returning'; goose.classList.add('is-running');
       label('Home, quick!'); move(.5, 550, nap);
     }, {moving:true});
@@ -169,7 +177,7 @@ bindTap(breathButton,()=>{
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) { visible = false; clearTimeout(timer); }
       else { const r = yard.getBoundingClientRect(); visible = r.bottom > 0 && r.top < innerHeight;
-        if (visible && !reduceMotion) { clearTimeout(timer); timer = setTimeout(state === 'sleeping' ? hello : home, 6500); }
+        if (visible && !reduceMotion && state !== 'emerging') { clearTimeout(timer); timer = setTimeout(state === 'sleeping' ? hello : home, 6500); }
       }
     });
     // Mobile browser bars resize the viewport height while scrolling. Only a real
@@ -181,6 +189,7 @@ bindTap(breathButton,()=>{
       if (state === 'returning') nap();
       else {
         stop(); place(current); goose.classList.remove('is-walking');
+        if (state === 'emerging') state = 'outside';
         if (visible && !reduceMotion) timer = setTimeout(state === 'sleeping' ? hello : home, 7000);
       }
     });
